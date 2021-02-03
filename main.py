@@ -57,7 +57,11 @@ def autowidth(ws):
         column_widths[col[0].column] = col_lens.max() + 2
 
     for col, value in column_widths.items():
-        ws.column_dimensions[col].width = value	
+        try:
+            ws.column_dimensions[col].width = value
+        except (TypeError, ValueError) as ex:
+            column_names = {1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G'}
+            ws.column_dimensions[column_names[col]].width = value	
 
 
 def formatting(ws):
@@ -68,7 +72,7 @@ def formatting(ws):
         for col in [1, 4]:
             ws.cell(n_row, col).number_format = 'dd.mm.yyyy'
         for col in [2, 3, 5, 6]:
-            ws.cell(n_row, col).number_format = '_-* #,##0.00 ₽_-'
+            ws.cell(n_row, col).number_format = '#,##0.00 [$р.-419];-#,##0.00 [$р.-419]' #'_-* #,##0.00 ₽_-'
         ws.cell(n_row, 7).number_format = '0.0000'
 
 		
