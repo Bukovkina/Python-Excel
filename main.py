@@ -4,6 +4,9 @@ import datetime as dt
 import apimoex
 import pandas as pd
 
+from openpyxl import load_workbook
+import numpy as np
+
 import smtplib, ssl
 from email import encoders
 from email.mime.base import MIMEBase
@@ -32,8 +35,10 @@ def get_data(currencies=[]):
 def create_excel(dfs=[], descending=True):
 	output_df = pd.DataFrame()
 	for df in dfs:
+		if descending:
+			df = df[::-1]
 		cur_name = df.secid[0]
-		output_df[f'Дата {cur_name}'] = df.tradedate
+		output_df[f'Дата {cur_name}'] = pd.to_datetime(df.tradedate, format='%Y-%m-%d').dt.date
 		output_df[f'Курс {cur_name}'] = df.rate
 		output_df[f'Изменение {cur_name}'] = output_df[f'Курс {cur_name}'].diff(periods=-1)
 	output_df['Отношение EUR к USD'] = output_df['Курс EUR/RUB'] / output_df['Курс USD/RUB']
@@ -44,7 +49,29 @@ def create_excel(dfs=[], descending=True):
 	num_strings = output_df.shape[0]
 	return (file_name, num_strings)
 
-	
+
+def autowidth(ws):
+    column_widths = {}
+    for col in ws.columns:
+        col_lens = np.array([len(str(cell.value)) for cell in col])
+        column_widths[col[0].column] = col_lens.max() + 2
+
+    for col, value in column_widths.items():
+        ws.column_dimensions[col].width = value	
+
+
+def formatting(ws):
+    for i, row in enumerate(ws.rows):
+        if i == 0:
+            continue
+        n_row = i + 1
+        for col in [1, 4]:
+            ws.cell(n_row, col).number_format = 'dd.mm.yyyy'
+        for col in [2, 3, 5, 6]:
+            ws.cell(n_row, col).number_format = '_-* #,##0.00 ₽_-'
+        ws.cell(n_row, 7).number_format = '0.0000'
+
+		
 def send_email(remote_server, port, 
                email_from, email_to, 
                subject, file_name, num_strings):
@@ -101,6 +128,13 @@ if __name__ == '__main__':
 
 	data = get_data(currencies)
 	file_name, n = create_excel(data)
+
+	wb = load_workbook(file_name)
+	ws = wb['Sheet1']
+	autowidth(ws)
+	formatting(ws)
+	wb.save(file_name)
+
 	send_email(remote_server, port, 
 			   email_from, email_to, 
 			   subject, file_name, n)
