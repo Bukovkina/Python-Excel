@@ -72,7 +72,7 @@ def formatting(ws):
         for col in [1, 4]:
             ws.cell(n_row, col).number_format = 'dd.mm.yyyy'
         for col in [2, 3, 5, 6]:
-            ws.cell(n_row, col).number_format = '#,##0.00 [$р.-419];-#,##0.00 [$р.-419]' #'_-* #,##0.00 ₽_-'
+            ws.cell(n_row, col).number_format = '#,##0.00 [$р.-419];-#,##0.00 [$р.-419]' # '_-* #,##0.00 ₽_-'
         ws.cell(n_row, 7).number_format = '0.0000'
 
 		
@@ -126,7 +126,7 @@ if __name__ == '__main__':
 	
 	remote_server = 'smtp.gmail.com'
 	port = 465
-	email_from = 'test.buk.test@gmail.com'
+	email_from = 'example@gmail.com'
 	email_to = 't.bukovkina@gmail.com'
 	subject = 'Курсы валют ' + ', '.join(currencies)
 
